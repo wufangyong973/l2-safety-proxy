@@ -5,7 +5,11 @@ The SDK only builds a URL + optional `x-l2sg-chain` header. Signing stays in you
 
 ## Install / import
 
-From this package root (after `npm run build`):
+```bash
+npm install l2-send-guard@0.5.0
+```
+
+Do not use `@latest`. From a git checkout, build first (`npm run build`) and import the same entry points.
 
 ```ts
 import {

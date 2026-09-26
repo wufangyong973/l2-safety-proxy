@@ -3,14 +3,40 @@
   "version": "0.5.0",
   "description": "Multi-L2 pre-broadcast JSON-RPC safety middleware \u2014 simulate eth_sendRawTransaction, abort definite reverts, fail-open on uncertainty; optional Layer 2 address/spend policy; AgentKit/viem drop-in helpers",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/api.js",
   "bin": {
-    "l2-send-guard": "dist/index.js"
+    "l2-send-guard": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "policy.agent.example.json",
+    "policy.example.json",
+    ".env.example",
+    "docs/TROUBLESHOOTING.md",
+    "docs/AGENT_DECISION_TABLE.md",
+    "docs/RESIDUAL_BYPASSES.md",
+    "docs/DECISION_LOG.md",
+    "docs/BUYER_ACCEPTANCE.md",
+    "docs/fixtures/dual-layer.expected.txt",
+    "src/sdk/README.md",
+    "SUPPORT.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yellowgram/l2-safety-proxy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yellowgram/l2-safety-proxy/issues"
+  },
+  "homepage": "https://github.com/yellowgram/l2-safety-proxy#readme",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
+    "build": "node api.js && tsc",
+    "start": "node api.js && node dist/index.js",
+    "dev": "node api.js && tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
@@ -25,7 +51,8 @@
     "probe:gascap": "bash scripts/check-rpc-gascap.sh",
     "demo:dual-layer": "node scripts/demo-dual-layer.mjs",
     "policy:check": "tsx scripts/policy-check.ts",
-    "demo:agent-halt": "node examples/agent-viem-halt.mjs"
+    "demo:agent-halt": "node examples/agent-viem-halt.mjs",
+    "prepublishOnly": "npm run build"
   },
   "engines": {
     "node": ">=20"

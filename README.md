@@ -27,19 +27,21 @@ There is no single “fail closed out of the box” mode. Pick a path below. Lay
 
 ## Pin
 
-`l2-send-guard@0.5.0` is the version in this tree. **It is not published to npm in this change.** Until it is:
+Install the exact version. Do not use `@latest`.
+
+```bash
+npm install l2-send-guard@0.5.0
+```
+
+The CLI is `l2-send-guard` (`npx l2-send-guard`). Imports are `l2-send-guard`, `l2-send-guard/sdk`, and `l2-send-guard/agent`.
+
+Offline tests and `demo:dual-layer` run from the git tree (the npm package is the runtime, not the test suite):
 
 ```bash
 git clone https://github.com/yellowgram/l2-safety-proxy.git
 cd l2-safety-proxy
-git checkout <commit>   # record the SHA in your lockfile notes
+git checkout <commit>   # the commit published as l2-send-guard@0.5.0
 npm ci && npm test && npm run build
-```
-
-When the package is on the registry, install the exact version, not `@latest`:
-
-```bash
-npm install l2-send-guard@0.5.0
 ```
 
 There is no tagged binary. A Docker image digest is not published here. Compose is below for people who build the image themselves. Upgrade notes: [CHANGELOG.md](./CHANGELOG.md).

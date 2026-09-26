@@ -2,7 +2,7 @@
 
 ## 0.5.0
 
-Minimum-support bar for the thin Guard. **npm publish of `l2-send-guard@0.5.0` is not part of this change.** Until the package is on the registry, pin the git commit. After publish, pin `l2-send-guard@0.5.0`. Do not use `@latest`. No container image digest and no binary are published here.
+Minimum-support bar for the thin Guard. Pin `l2-send-guard@0.5.0`. Do not use `@latest`. The npm tarball ships `dist/` (CLI `l2-send-guard` → `dist/index.js`, library entry `dist/api.js`). No container image digest and no separate binary are published.
 
 ### Behavior
 
