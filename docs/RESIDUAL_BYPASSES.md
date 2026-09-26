@@ -19,6 +19,6 @@ ERC-20 `transfer` / `transferFrom` recipient checks (when `erc20RecipientCheck` 
 1. Do not allowlist a router, multicall, or forwarder unless you accept that it can reach anything it can call.
 2. Keep `allowAnyDestination` false and `allowContractCreation` false on the Agent path. Process start refuses an enabled policy that sets `allowAnyDestination`. Legacy transactions with no `chainId` are not compared to the selected chain.
 3. Treat `-32083` as a halt, not as a bug to retry. See [AGENT_DECISION_TABLE.md](./AGENT_DECISION_TABLE.md).
-4. Re-read this page when the agent gains a tool. Your inventory is yours; this page is the generic list.
+4. Re-read this page when the agent gains a tool, and map that tool on [templates/bypass-map.md](./templates/bypass-map.md) using [CHANGE_PROTOCOL.md](./CHANGE_PROTOCOL.md). Your inventory is yours; this page is the generic list.
 
 Out of product: Safe / Zodiac / ERC-7579, approval unwinding, calldata-deep policy, hosted policy SaaS. Those are different systems. See [SUPPORT.md](../SUPPORT.md).

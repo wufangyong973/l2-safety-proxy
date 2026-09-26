@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Short runbook for the failures that are actually Guard's. Nonce, underpriced, and replacement-underpriced are **client or upstream** fee/nonce problems. Guard does not allocate nonces.
+Short runbook for the failures that are actually Guard's. Walk [TRIAGE.md](./TRIAGE.md) first and stop at the matching step. Nonce, underpriced, and replacement-underpriced are **client or upstream** fee/nonce problems. Guard does not allocate nonces.
 
 ## 1. Upstream RPC flaky or missing `eth_simulateV1`
 

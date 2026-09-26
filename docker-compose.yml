@@ -9,10 +9,12 @@
 #   L2SG_POLICY_ENABLED: "true"
 #   L2SG_POLICY_FILE: /policy/policy.json
 # The example mounted below is poison and the process will refuse to start
-# if you enable it unchanged.
+# if you enable it unchanged. restart: unless-stopped will keep retrying that
+# exit. `docker compose stop` is how you halt the loop while you fix the file.
 services:
   l2-send-guard:
     build: .
+    restart: unless-stopped
     ports:
       - "127.0.0.1:8545:8545"
     environment:

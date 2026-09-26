@@ -11,7 +11,7 @@ Free support is **best-effort**. There is **no SLA** and no on-call.
 | **GitHub Issues** | Bugs with an offline repro: package pin or commit, Node version, OS, `npm test` and `npm run demo:dual-layer` output (or why the offline demo failed), and redacted env **booleans** only. Template: `.github/ISSUE_TEMPLATE/bug_report.md`. |
 | **GitHub Discussions** | How-to: install path, policy shape, chain header, reading an error code. |
 
-Issues that omit the repro may be closed after 14 days. No auto-close bot ships in this repo. Maintainers close them by hand.
+Bug issues that omit the repro are labeled `needs-repro` by [`.github/workflows/repro-triage.yml`](./.github/workflows/repro-triage.yml). The workflow comments once. If the label is still present after 14 days with no issue update, it closes the issue. It only considers issues labeled `bug` or titled `[bug]`. It does not close vulnerability reports, bot issues, or how-to discussions. Add `keep-open` to pause the close. A later edit that fills the repro removes the label. Maintainers can still close by hand.
 
 Nonce, underpriced, and faucet failures are not Issues. See [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md).
 

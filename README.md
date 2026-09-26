@@ -78,7 +78,7 @@ If policy is enabled and the file is missing, invalid, or still full of placehol
 | `open` (default) | forward (`fail_open`) | A bad agent can still broadcast when sim is unsure |
 | `strict` | abort (`-32082`) | Good sends can brick when the upstream sim is flaky |
 
-**Policy ON is not a safe agent.** Allowlisting a router, Permit2, or multicall still moves value. Read [docs/RESIDUAL_BYPASSES.md](./docs/RESIDUAL_BYPASSES.md) before the first agent send. Decision table: [docs/AGENT_DECISION_TABLE.md](./docs/AGENT_DECISION_TABLE.md).
+**Policy ON is not a safe agent.** Allowlisting a router, Permit2, or multicall still moves value. Read [docs/RESIDUAL_BYPASSES.md](./docs/RESIDUAL_BYPASSES.md) before the first agent send. Decision table: [docs/AGENT_DECISION_TABLE.md](./docs/AGENT_DECISION_TABLE.md). Operator pack (pre-install, change protocol, triage, rollback — you fill the blanks): [docs/OPERATOR.md](./docs/OPERATOR.md).
 
 `L2SG_HOST` defaults to `127.0.0.1`. Binding `0.0.0.0` without an ACL turns the proxy into an unauthenticated raw-tx forwarder onto your upstream RPC. The process warns when it binds a wildcard.
 

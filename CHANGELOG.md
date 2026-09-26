@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+Docs and issue triage only. The package version stays **0.5.0**. `npm publish` is not part of this change.
+
+- Operator pack: [docs/OPERATOR.md](./docs/OPERATOR.md) and the templates under `docs/templates/`. Pre-install, tool↔allowlist change protocol, first-line triage, incident labels, upgrade, staging vs funded testnet, topology, latency, rollback. The blanks are yours to fill.
+- Bug issues that omit the offline repro are labeled `needs-repro` and closed after 14 days without an update (`.github/workflows/repro-triage.yml`). Vulnerability reports are outside that workflow.
+- CI also runs on Node 24 (current LTS), beside Node 20 and 22.
+- The compose sample sets `restart: unless-stopped`. Publish on the host stays `127.0.0.1:8545:8545`.
+
 ## 0.5.0
 
 Minimum-support bar for the thin Guard. Pin `l2-send-guard@0.5.0`. Do not use `@latest`. The npm tarball ships `dist/` (CLI `l2-send-guard` → `dist/index.js`, library entry `dist/api.js`). No container image digest and no separate binary are published.

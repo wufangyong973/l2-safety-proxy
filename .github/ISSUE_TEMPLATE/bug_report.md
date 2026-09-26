@@ -5,7 +5,7 @@ title: "[bug] "
 labels: bug
 ---
 
-Issues without the repro block may be closed after 14 days. No bot does that; maintainers close them by hand. How-to questions belong in Discussions.
+Issues without the repro block are labeled `needs-repro` and closed after 14 days without an update (`.github/workflows/repro-triage.yml`). Add the label `keep-open` to pause that. How-to questions belong in Discussions. Vulnerability reports do not belong here — see SECURITY.md.
 
 **Pin**
 - Package version or commit SHA (not `@latest`):

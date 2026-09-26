@@ -81,3 +81,64 @@ Reviewed error parity between HTTP and `check()`, the halt sample, and the decis
 | viem transport default retries can replay `-32083`. | **Fixed** in the sample: `retryCount: 0`. |
 | Halt sample never sends a mismatched chainId, so `-32084` was easy to miss. | **Deferred as an executed case.** The decision table and the sample comment call it non-retryable. `npm run demo:dual-layer` already diffs a `-32084` line against `docs/fixtures/dual-layer.expected.txt`. A second live case in the halt sample would duplicate that contract. |
 | Support boundary: Issues for offline repros, Discussions for how-to, no SLA, no payee in the repo. | **Kept.** No checkout and no invented contact channel. |
+
+## Operator pack (after 0.5.0)
+
+Scope: docs, templates, the repro-triage workflow, and CI on Node 24. No new proxy behavior, no payee, no npm publish. Version stays 0.5.0.
+
+### Design iteration 1 — security / ops
+
+**Attack.** A stack of "you own this" pages can still tell an operator to bind `0.0.0.0`, treat policy ON as safety, or invent a payee. An auto-close bot that treats every Issue as a bug will close vulnerability reports and how-to threads.
+
+| | |
+| --- | --- |
+| Keep | Human path stays Layer 2 off. Agent path stays placeholders-must-fail. Localhost is the bind. SUPPORT.md stays the payee boundary. |
+| Kill | Any template that includes a real key, a payment rail, or "policy ON means safe." Closing issues that are not bugs. |
+| Change | Operator pages repeat the honesty lines. The triage workflow only labels `bug` / `[bug]`, skips `CVE-` / `GHSA-` / security advisories, and honors `keep-open`. The systemd sample sets `L2SG_HOST=127.0.0.1`. |
+
+### Design iteration 2 — maintainer / DX, attacking iteration 1
+
+**Attack.** Fifteen essays will drift from the decision table. Claiming Node 24 in prose while CI stays on 20 and 22 is a lie. Rewriting the bug template into a form breaks paste. An untested classifier in YAML will false-positive on the empty template.
+
+| | |
+| --- | --- |
+| Keep | Markdown bug template. Decision table stays the code-semantics source. `policy:check` and `demo:dual-layer` stay offline. |
+| Kill | A second copy of the decision table. A Node 24 claim without a matrix entry. |
+| Change | `docs/OPERATOR.md` is an index. Short pages link the existing docs. CI matrix adds `"24"`. `scripts/repro-triage.mjs` is what the workflow runs, and vitest covers it. Empty template fields must not steal the next line (`[ \t]` instead of `\s`). |
+
+### Design iteration 3 — buyer / integrator, attacking iteration 2
+
+**Attack.** A canary that reverts looks like a failed policy edit. A kill switch inside Guard does not stop an agent that still has a direct RPC. "Staging vs prod" will be read as mainnet. A bench millisecond quoted as production RTT is a lie. A weekly job that closes `needs-repro` even after the body was fixed punishes the person who replied in the wrong box. Recommending one shared Guard hides blast radius.
+
+| | |
+| --- | --- |
+| Keep | Both environments are Sepolia. No mainnet promotion. Latency page points at `npm run bench` and forbids treating mock milliseconds as RTT. |
+| Kill | A kill switch that is "restart the proxy." |
+| Change | Change protocol lists `-32080` as simulation, not a bad policy edit. Rollback stops the agent first. Topology says one process per funded wallet is the smaller blast radius. The stale pass clears the label when the repro is now present. |
+
+### Code review 1 — security / ops
+
+| Finding | Disposition |
+| --- | --- |
+| `\s` after `Node version:` / `OS:` / the pin colon treated the next bullet as filled, so an empty bug template looked complete. | **Fixed.** Same-line `[ \t]` only. Test uses the checked-in template. |
+| The template sentence "Vulnerability reports do not belong here" matched `vulnerabilit`, so every bug filed on the template was skipped and never labeled. | **Fixed.** That sentence is stripped before the word match. `CVE-`, `GHSA-`, "security advisory", and a `security` label still skip. |
+| `restart: unless-stopped` plus a poison policy (exit 1) restart-loops. `StartLimitBurst` in `[Service]` is ignored on current systemd. | **Fixed.** Compose comment says `docker compose stop`. Systemd limits sit in `[Unit]` (3 failures / 60s). Topology says so. |
+| Comment-then-label, and `removeLabel` 404, so a retry or a missing label does not fail the job closed. | **Fixed** in the workflow. A retry that comments twice if the label never stuck is **deferred** — the second comment is the same text. |
+
+### Code review 2 — maintainer / DX
+
+| Finding | Disposition |
+| --- | --- |
+| Classifier imported for tests could also run `main` and `process.exit`. | **Fixed.** Direct-run check uses `import.meta.url`. A CLI spawn test covers `classify`. |
+| Operator links and the npm `files` list can drift. | **Fixed.** `tests/operator-docs.test.ts` checks the pages exist, are listed in `package.json` `files`, resolve relative links, and do not contain a payee or a safe-agent claim. |
+| Fallback RPC is not "one extra call on every send." It runs only after primary `eth_call` is uncertain. | **Fixed** in `docs/LATENCY.md` to match `src/sim/simulator.ts`. |
+| Node 24 is on the matrix. | **Checked.** The suite passed under Node v24.10.0 (140 tests) and under Node 22. The CI job is the same offline steps. No Sepolia. |
+
+### Code review 3 — buyer / integrator
+
+| Finding | Disposition |
+| --- | --- |
+| Canary step omitted `-32080`, so a reverting tool call looked like the policy edit failed. | **Fixed** in `docs/CHANGE_PROTOCOL.md`. |
+| Halt sample's in-memory `0x1111…` could be read as a loaded policy file. | **Fixed** with a comment: that map is not a file; poison JSON still fails `policy:check`. |
+| Kill switch, staging, and shared-Guard wording match iteration 3. | **Kept.** |
+| No payee, no `@latest`, no mainnet SLA in the new pages. | **Kept.** `npm publish` was not run. Version stays 0.5.0. |

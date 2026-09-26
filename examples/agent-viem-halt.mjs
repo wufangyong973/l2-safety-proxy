@@ -163,6 +163,9 @@ function createSubmitter(client) {
   };
 }
 
+// In-memory fence for this sample only. The raw tx targets 0x000…0001, which is
+// not the entry below, so Layer 2 denies. This map is not a policy file: poison
+// placeholders in policy JSON still fail `policy:check` and refuse process start.
 const policy = defaultSpendPolicy();
 policy.enabled = true;
 policy.destinations = new Map([

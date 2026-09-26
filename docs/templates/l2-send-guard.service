@@ -1,0 +1,24 @@
+# Sample user unit. You install it. Replace User, WorkingDirectory, and EnvironmentFile.
+# `npm run build` must have produced dist/index.js. This unit does not compile TypeScript.
+# Listens on 127.0.0.1 only. Do not set L2SG_HOST=0.0.0.0 here.
+# Agent path: L2SG_POLICY_ENABLED=true and L2SG_POLICY_FILE in the environment file,
+# after `npm run policy:check -- ./policy.json` prints policy:check OK.
+
+[Unit]
+Description=L2 Send Guard (localhost JSON-RPC proxy)
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=l2sg
+WorkingDirectory=/opt/l2-send-guard
+EnvironmentFile=/etc/l2-send-guard.env
+Environment=L2SG_HOST=127.0.0.1
+ExecStart=/usr/bin/node /opt/l2-send-guard/dist/index.js
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

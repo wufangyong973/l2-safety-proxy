@@ -1,0 +1,163 @@
+# Comments on bug issues that omit the offline repro, and closes that label
+# after 14 days of silence. Does not call public RPCs and does not run the test suite.
+name: repro-triage
+
+on:
+  issues:
+    types: [opened, edited]
+  schedule:
+    - cron: "17 15 * * 1"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  classify:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Comment, label, or clear
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execFileSync } = require("node:child_process");
+            const fs = require("node:fs");
+            const issue = context.payload.issue;
+            const payload = {
+              title: issue.title || "",
+              body: issue.body || "",
+              labels: (issue.labels || []).map((l) => l.name),
+              user: issue.user && issue.user.login,
+            };
+            fs.writeFileSync("/tmp/issue.json", JSON.stringify(payload));
+            const out = execFileSync("node", ["scripts/repro-triage.mjs", "classify", "/tmp/issue.json"], {
+              encoding: "utf8",
+              cwd: process.env.GITHUB_WORKSPACE,
+            });
+            const decision = JSON.parse(out);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            core.info(`repro-triage ${decision.action} ${ (decision.reasons || []).join(",") }`);
+            async function removeNeedsRepro() {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  name: "needs-repro",
+                });
+              } catch (err) {
+                if (!err || err.status !== 404) throw err;
+              }
+            }
+            if (decision.action === "comment") {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: decision.comment,
+              });
+              try {
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: "needs-repro",
+                  color: "b60205",
+                  description: "Bug issue is missing the offline repro block",
+                });
+              } catch (err) {
+                if (!err || err.status !== 422) throw err;
+              }
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issue.number,
+                labels: ["needs-repro"],
+              });
+            } else if (decision.action === "clear") {
+              await removeNeedsRepro();
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: decision.comment,
+              });
+            }
+
+  close-stale:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Close stale needs-repro issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execFileSync } = require("node:child_process");
+            const fs = require("node:fs");
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              labels: "needs-repro",
+              per_page: 50,
+            });
+            for (const issue of issues) {
+              if (issue.pull_request) continue;
+              const payload = {
+                title: issue.title || "",
+                body: issue.body || "",
+                labels: (issue.labels || []).map((l) => (typeof l === "string" ? l : l.name)),
+                user: issue.user && issue.user.login,
+                updatedAt: issue.updated_at,
+              };
+              fs.writeFileSync("/tmp/issue.json", JSON.stringify(payload));
+              const out = execFileSync(
+                "node",
+                ["scripts/repro-triage.mjs", "stale", "/tmp/issue.json", String(Date.now())],
+                { encoding: "utf8", cwd: process.env.GITHUB_WORKSPACE }
+              );
+              const decision = JSON.parse(out);
+              if (decision.action === "clear") {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    name: "needs-repro",
+                  });
+                } catch (err) {
+                  if (!err || err.status !== 404) throw err;
+                }
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: decision.comment,
+                });
+              } else if (decision.action === "close") {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: decision.comment,
+                });
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  state: "closed",
+                  state_reason: "not_planned",
+                });
+              }
+            }

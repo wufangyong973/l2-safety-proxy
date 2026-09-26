@@ -72,7 +72,7 @@ chain-select arb/op/base: PASS
 
 ## Next steps if it fits
 
-1. Try AgentKit / viem drop-in (`examples/agentkit-viem.ts` + `policy.agent.example.json`).
+1. Try AgentKit / viem drop-in (`examples/agentkit-viem.ts` + `policy.agent.example.json`). Before a funded burner, walk [`OPERATOR.md`](./OPERATOR.md).
 2. Compare vs hosted policy engines: [`COMPETITIVE.md`](./COMPETITIVE.md).
 3. Want hands-on wire-up or a policy pack review? Read [`SUPPORT.md`](../SUPPORT.md) first. There is no payee in this repo. Bring the artifacts in [`BUYER_ACCEPTANCE.md`](./BUYER_ACCEPTANCE.md). Scope skeleton: [`PILOT_SOW.md`](./PILOT_SOW.md).
 
