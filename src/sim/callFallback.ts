@@ -3,6 +3,7 @@ import type { RpcCaller } from "./rpcClient.js";
 import type { ParsedSend } from "./txParse.js";
 import { decodeRevertData, extractRevertHex } from "../decode/revert.js";
 import type { SimResult } from "../types/index.js";
+import { gs013OrBubbledReason } from "./safeExec.js";
 
 /**
  * Fallback: eth_call with recovered `from` at latest block.
@@ -37,7 +38,7 @@ export async function simulateEthCall(
         ok: false,
         method: "eth_call",
         confidence: "definite",
-        reason: decoded.reason,
+        reason: gs013OrBubbledReason(decoded.reason),
         rawData: hex,
         code: "DEFINITE_REVERT",
       };
@@ -50,7 +51,7 @@ export async function simulateEthCall(
         ok: false,
         method: "eth_call",
         confidence: "definite",
-        reason: msg,
+        reason: gs013OrBubbledReason(msg),
         code: "DEFINITE_REVERT",
       };
     }

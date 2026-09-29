@@ -2,7 +2,17 @@
 
 ## Unreleased
 
-Docs and issue triage only. The package version stays **0.5.0**. `npm publish` is not part of this change.
+The package version stays **0.5.0** until a separate release bump. `npm publish` is not part of this change.
+
+### Issue #17 — Safe `execTransaction` ExecutionFailure abort (LaunchGate locks)
+
+- Layer 1: Safe-shaped `execTransaction` (`0x6a761202`) hard-aborts on simulated `ExecutionFailure` even when outer status is success (`-32080`).
+- Certainty: `execTransaction` outer success without log/`debug_traceCall` inspection is **uncertain** (not definite forward).
+- Decode split: abort does not require inner revert bytes; optional `callTracer` enriches copy. GS013 / bubbled-inner fixtures covered.
+- Docs: [docs/SAFE_EXEC_DRIFT.md](./docs/SAFE_EXEC_DRIFT.md) — Protocol Kit complementarity + proposal→broadcast drift only; `execTransactionFromModule` residual / out of P0.
+- Sealed fixture demo: `npm run demo:safe-exec` (mock upstream only; no checkout URL).
+
+### Prior unreleased (operator pack)
 
 - Operator pack: [docs/OPERATOR.md](./docs/OPERATOR.md) and the templates under `docs/templates/`. Pre-install, tool↔allowlist change protocol, first-line triage, incident labels, upgrade, staging vs funded testnet, topology, latency, rollback. The blanks are yours to fill.
 - Bug issues that omit the offline repro are labeled `needs-repro` and closed after 14 days without an update (`.github/workflows/repro-triage.yml`). Vulnerability reports are outside that workflow.

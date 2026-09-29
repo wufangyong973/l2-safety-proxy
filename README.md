@@ -21,11 +21,11 @@ There is no single “fail closed out of the box” mode. Pick a path below. Lay
 | **Chains** | `arb-sepolia`, `op-sepolia`, `base-sepolia` only. **Testnet only.** No mainnet SLA. |
 | **Is** | A JSON-RPC proxy in front of your existing RPC |
 | **Submit** | Signed `eth_sendRawTransaction` (and Sync). `eth_sendTransaction` is refused (`-32081`) |
-| **Layer 1** | Sim → abort definite revert (`-32080`) or forward. Uncertain + `GUARD_MODE=strict` → `-32082` |
+| **Layer 1** | Sim → abort definite revert (`-32080`) or forward. Uncertain + `GUARD_MODE=strict` → `-32082`. Safe-shaped `execTransaction`: abort on simulated `ExecutionFailure`; outer success without log/trace → uncertain ([docs/SAFE_EXEC_DRIFT.md](./docs/SAFE_EXEC_DRIFT.md)) |
 | **Layer 2** | Optional allowlist + native caps. Deny → `-32083` `policy_denied` (never fail-open). Default **off** |
 | **Chain check** | Signed `chainId` ≠ selected chain → `-32084` `chain_mismatch` (not forwarded) |
 
-**Not in this product:** key custody, Safe / Zodiac / ERC-7579, approval unwinding, hosted SaaS, a managed RPC, MEV protection. Those requests are Discussions or a paid SKU, not unlimited Issue debugging. See [SUPPORT.md](./SUPPORT.md).
+**Not in this product:** key custody, Safe-enterprise / Zodiac / ERC-7579 policy engines, approval unwinding, hosted SaaS, a managed RPC, MEV protection. Gate-2 **does** abort Safe-shaped `execTransaction` inner failures at send time (not a Protocol Kit replacement). Those enterprise requests are Discussions or a paid SKU, not unlimited Issue debugging. See [SUPPORT.md](./SUPPORT.md) and [docs/SAFE_EXEC_DRIFT.md](./docs/SAFE_EXEC_DRIFT.md).
 
 ## Pin
 

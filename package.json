@@ -15,6 +15,7 @@
     "docs/TROUBLESHOOTING.md",
     "docs/AGENT_DECISION_TABLE.md",
     "docs/RESIDUAL_BYPASSES.md",
+    "docs/SAFE_EXEC_DRIFT.md",
     "docs/DECISION_LOG.md",
     "docs/BUYER_ACCEPTANCE.md",
     "docs/OPERATOR.md",
@@ -42,7 +43,8 @@
     "SECURITY.md",
     "CHANGELOG.md",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "docs/fixtures/safe-exec.expected.txt"
   ],
   "repository": {
     "type": "git",
@@ -57,9 +59,9 @@
     "url": "https://www.yellowgram.dev"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
+    "build": "node api.js && tsc",
+    "start": "node api.js && node dist/index.js",
+    "dev": "node api.js && tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
@@ -75,7 +77,8 @@
     "demo:dual-layer": "node scripts/demo-dual-layer.mjs",
     "policy:check": "tsx scripts/policy-check.ts",
     "demo:agent-halt": "node examples/agent-viem-halt.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "demo:safe-exec": "node scripts/demo-safe-exec.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -3,6 +3,12 @@ import type { RpcCaller } from "./rpcClient.js";
 import type { ParsedSend } from "./txParse.js";
 import { decodeRevertData, extractRevertHex } from "../decode/revert.js";
 import type { SimResult } from "../types/index.js";
+import {
+  executionFailureReason,
+  gs013OrBubbledReason,
+  isExecTransactionData,
+  logsContainExecutionFailure,
+} from "./safeExec.js";
 
 /**
  * True when the upstream rejects eth_simulateV1 as unavailable/unsupported
@@ -30,6 +36,9 @@ export function isSimulateV1UnsupportedError(err: unknown): boolean {
  *
  * Returns null if method is unsupported so caller can fall back to eth_call
  * and mark the upstream in the capability cache.
+ *
+ * Safe lock: when call results include a logs array, scan for ExecutionFailure
+ * and hard-abort even if outer status is success.
  */
 export async function simulateV1(
   call: RpcCaller,
@@ -57,7 +66,7 @@ export async function simulateV1(
 
   try {
     const result = (await call("eth_simulateV1", params)) as unknown;
-    return interpretSimulateV1(result);
+    return interpretSimulateV1(result, parsed.data);
   } catch (err) {
     // Unsupported / invalid params for our shape → signal eth_call fallback
     if (isSimulateV1UnsupportedError(err)) {
@@ -71,12 +80,21 @@ export async function simulateV1(
         ok: false,
         method: "eth_simulateV1",
         confidence: "definite",
-        reason: decoded.reason,
+        reason: gs013OrBubbledReason(decoded.reason),
         rawData: hex,
         code: "DEFINITE_REVERT",
       };
     }
     const msg = err instanceof Error ? err.message : String(err);
+    if (/GS013/i.test(msg)) {
+      return {
+        ok: false,
+        method: "eth_simulateV1",
+        confidence: "definite",
+        reason: gs013OrBubbledReason(msg),
+        code: "DEFINITE_REVERT",
+      };
+    }
     return {
       ok: false,
       method: "eth_simulateV1",
@@ -87,8 +105,11 @@ export async function simulateV1(
   }
 }
 
-function interpretSimulateV1(result: unknown): SimResult {
-  // Expected: array of block results → calls[] with status / error / returnData
+function interpretSimulateV1(
+  result: unknown,
+  calldata: Hex | undefined
+): SimResult {
+  // Expected: array of block results → calls[] with status / error / returnData / logs
   if (!Array.isArray(result) || result.length === 0) {
     return {
       ok: false,
@@ -112,22 +133,25 @@ function interpretSimulateV1(result: unknown): SimResult {
           ? (errObj.data as Hex)
           : undefined;
       const decoded = decodeRevertData(data);
+      const msg =
+        typeof errObj.message === "string"
+          ? errObj.message
+          : decoded.reason;
       return {
         ok: false,
         method: "eth_simulateV1",
         confidence: "definite",
-        reason:
-          typeof errObj.message === "string"
-            ? errObj.message
-            : decoded.reason,
+        reason: gs013OrBubbledReason(msg),
         rawData: data,
         code: "DEFINITE_REVERT",
       };
     }
+    // No per-call result and no logs → cannot claim log inspect
     return {
       ok: true,
       method: "eth_simulateV1",
       confidence: "definite",
+      logsInspected: false,
     };
   }
 
@@ -137,8 +161,10 @@ function interpretSimulateV1(result: unknown): SimResult {
   const gasUsed = first.gasUsed
     ? BigInt(first.gasUsed as string)
     : undefined;
+  const logs = first.logs;
+  const hasLogsArray = Array.isArray(logs);
 
-  // status 0 / "0x0" / error present → revert
+  // status 0 / "0x0" / error present → revert (covers GS013 / bubbled inner)
   const reverted =
     first.error != null ||
     status === 0 ||
@@ -165,8 +191,20 @@ function interpretSimulateV1(result: unknown): SimResult {
       ok: false,
       method: "eth_simulateV1",
       confidence: "definite",
-      reason,
+      reason: gs013OrBubbledReason(reason),
       rawData,
+      code: "DEFINITE_REVERT",
+      gasUsed,
+    };
+  }
+
+  // Outer success — Safe lock: ExecutionFailure in logs ⇒ hard abort
+  if (hasLogsArray && logsContainExecutionFailure(logs)) {
+    return {
+      ok: false,
+      method: "eth_simulateV1",
+      confidence: "definite",
+      reason: executionFailureReason(),
       code: "DEFINITE_REVERT",
       gasUsed,
     };
@@ -177,5 +215,11 @@ function interpretSimulateV1(result: unknown): SimResult {
     method: "eth_simulateV1",
     confidence: "definite",
     gasUsed,
+    logsInspected: hasLogsArray,
   };
+}
+
+/** Exported for tests — re-export shape helpers without widening API. */
+export function execTransactionNeedsLogProof(data: Hex | undefined): boolean {
+  return isExecTransactionData(data);
 }

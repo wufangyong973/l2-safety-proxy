@@ -34,6 +34,11 @@ export interface SimSuccess {
   method: SimMethod;
   confidence: Certainty;
   gasUsed?: bigint;
+  /**
+   * eth_simulateV1 returned a logs array that was scanned for Safe
+   * ExecutionFailure. Absent/false means log proof was not available.
+   */
+  logsInspected?: boolean;
 }
 
 export interface SimRevert {

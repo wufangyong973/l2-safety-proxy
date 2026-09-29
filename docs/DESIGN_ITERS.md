@@ -1,10 +1,10 @@
 # Design iterations and code reviews (0.5.0 quality gate)
 
-Strategy lock after these reviews: low-support OSS. Ticket-cutting docs and the halt sample only. No new chains, custody, Safe, mainnet, hosted service, or paid/grant pages.
+Strategy lock after these reviews: low-support OSS. Ticket-cutting docs and the halt sample only. No new chains, custody, Safe-enterprise / Zodiac / ERC-7579 engines, mainnet, hosted service, or paid/grant pages. (Issue #17 Gate-2 `execTransaction` `ExecutionFailure` abort is Layer 1 middleware, not a Safe product — [SAFE_EXEC_DRIFT.md](./SAFE_EXEC_DRIFT.md).)
 
 Publish surface for `l2-send-guard@0.5.0`: `files` includes `dist` (gitignored, so a bare pack used to omit the bin), `bin` is `dist/index.js`, and `main` / `exports` point at `dist/api.js` so importing the library does not start the server. `npm publish` is not run from this tree when `NPM_TOKEN` is absent.
 
-Scope of the attacks: policy semantics, refuse-start, dual-path defaults, error shapes, the offline demo contract, and the support boundary. No custody product, no Safe or ERC-7579, no mainnet SLA, no hosted service, and no payment processor is in this design.
+Scope of the attacks: policy semantics, refuse-start, dual-path defaults, error shapes, the offline demo contract, and the support boundary. No custody product, no Safe-enterprise or ERC-7579 engine, no mainnet SLA, no hosted service, and no payment processor is in this design.
 
 ## Design iteration 1 — security / ops
 

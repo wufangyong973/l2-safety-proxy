@@ -1,0 +1,9 @@
+L2 Send Guard — sealed Safe execTransaction ExecutionFailure demo
+fixture-only · no live RPC · no checkout URL
+
+decision: abort
+error.code: -32080
+forwarded_sends: 0
+reason_has_ExecutionFailure: true
+
+PASS: outer-success+ExecutionFailure aborted; not forwarded
