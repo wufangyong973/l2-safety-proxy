@@ -73,6 +73,7 @@ Best first proof — **no public RPC, no keys, no broadcast**:
 ```bash
 npm run build
 npm run demo:dual-layer    # -32080 + -32083
+npm run demo:safe-exec     # Safe execTransaction ExecutionFailure → -32080 (fixture-only)
 node scripts/demo-offline.mjs   # Layer 1 abort + fail-open only
 ```
 

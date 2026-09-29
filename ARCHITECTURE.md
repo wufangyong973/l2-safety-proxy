@@ -41,8 +41,10 @@ Wallet / bot / agent
 
 | Outcome | Confidence | Action (default) |
 | --- | --- | --- |
-| Node returns standard revert data / status=0 from sim | `definite` | **Abort** — return decoded error |
-| Sim succeeds | `definite` | Forward send |
+| Node returns standard revert data / status=0 from sim (incl. GS013 / bubbled inner) | `definite` | **Abort** — return decoded error |
+| Simulated Safe `ExecutionFailure` log (or trace proof) on `execTransaction` | `definite` | **Abort** — even if outer status success |
+| Sim succeeds (non-`execTransaction`, or `execTransaction` with logs/trace inspected and no `ExecutionFailure`) | `definite` | Forward send |
+| `execTransaction` outer success **without** log/trace inspection | `uncertain` | **Fail-open** / strict — never definite forward |
 | Method missing, HTTP/network error, unparseable tx, unexpected shape | `uncertain` | **Fail-open** forward |
 | `GUARD_MODE=open` (default) / legacy `L2SG_FAIL_OPEN=true` | uncertain | **fail_open** forward |
 | `GUARD_MODE=strict` / legacy `L2SG_FAIL_OPEN=false` | uncertain / missing / unknown | **abort** (`-32082`) |
@@ -58,6 +60,7 @@ Response metadata on every send decision: `decision`, `confidence` (`simulate_v1
 3. **Per-upstream capability cache (process lifetime):** after `-32601`/`-32602` (or equivalent message) for `eth_simulateV1`, that upstream URL skips V1 for the rest of the process and goes straight to `eth_call`.
 4. **Optional `L2SG_RPC_FALLBACK_<CHAIN>`:** if primary `eth_call` is still uncertain, retry simulation against the alternate RPC (sends still forward to the primary upstream).
 5. Decode `Error(string)` / `Panic(uint256)` / custom selectors for human-readable reasons. Confidence stays `definite` only on clear revert/success; unsupported V1 alone never fail-opens without trying `eth_call`.
+6. **Safe-shaped `execTransaction` (`0x6a761202`):** after sim, require log inspect (`eth_simulateV1` logs) and/or optional `debug_traceCall`+`callTracer` before labeling outer success definite. `ExecutionFailure` → hard abort. Abort does not require inner revert bytes (1.3/1.4 event is txHash+payment only). This is **proposal→broadcast drift**, complementary to Protocol Kit sign-time sim — not a Safe product. Details: [docs/SAFE_EXEC_DRIFT.md](./docs/SAFE_EXEC_DRIFT.md).
 
 No local revm dependency in M1 (KISS TypeScript). A future M2 may add an optional local engine for offline CI.
 
@@ -92,7 +95,7 @@ If the signed transaction includes a `chainId` and it disagrees with the selecte
 
 ### What Layer 2 is not
 
-- Not a Safe / enterprise policy engine, not ERC-7579 session keys, not on-chain enforcement.
+- Not a Safe-enterprise / Zodiac / ERC-7579 policy engine, not on-chain enforcement. (Layer 1 **does** abort Safe-shaped `execTransaction` inner `ExecutionFailure` at Gate-2 — see [docs/SAFE_EXEC_DRIFT.md](./docs/SAFE_EXEC_DRIFT.md).)
 - Not rolling daily aggregates, drip detection, or token-decimals accounting.
 - Not key custody or a blocking human-approval server.
 - Does **not** change Layer 1 fail-open semantics for simulation uncertainty.
@@ -134,10 +137,11 @@ Enable via `L2SG_POLICY_ENABLED=true` and/or `L2SG_POLICY_FILE` (see `policy.exa
 | **Alchemy / QuickNode** | Managed RPC clouds. We sit in front; we do not replace them. |
 | **CDP Policy Engine** | Hosted allowlist / ethValue for CDP wallets. **Complement** — Guard adds Layer 1 sim + self-hosted Layer 2 for local-sign paths. We do not replace CDP. |
 | **Agent Control–style hosted policy** | Policy/approval UX. Differentiator: Guard = sim + thin policy self-hosted JSON-RPC. See [docs/COMPETITIVE.md](./docs/COMPETITIVE.md). |
+| **Safe Protocol Kit** | Sign-time `estimateSafeTxGas` / `simulateAndRevert`. **Complementary** — Guard covers last-mile proposal→broadcast drift + `ExecutionFailure` abort at send time. Not a Protocol Kit replacement. |
 
 ## Out of scope (M1)
 
-Hosted SaaS, billing, indexing, MEV, private-key custody, Safe-enterprise / ERC-7579 policy engines (Layer 2 stays thin allowlist+caps only).
+Hosted SaaS, billing, indexing, MEV, private-key custody, Safe-enterprise / Zodiac / ERC-7579 policy engines (Layer 2 stays thin allowlist+caps only). `execTransactionFromModule` is out of P0 (residual). Complement Protocol Kit; do not replace it.
 
 ## Package layout
 

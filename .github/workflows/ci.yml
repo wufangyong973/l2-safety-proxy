@@ -36,6 +36,9 @@ jobs:
       - name: Offline dual-layer demo
         run: npm run demo:dual-layer
 
+      - name: Offline Safe execTransaction ExecutionFailure demo
+        run: npm run demo:safe-exec
+
       - name: Agent halt sample
         run: node examples/agent-viem-halt.mjs
 
