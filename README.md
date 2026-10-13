@@ -113,7 +113,19 @@ npm run demo:dual-layer       # diff vs docs/fixtures/dual-layer.expected.txt
 node examples/agent-viem-halt.mjs
 ```
 
-`/health` reports `guardMode`, `policy.enabled`, `policy.destinationCount` (not the addresses), and `policy.notifyConfigured` (`true`/`false`).
+`/health` is the integrator-facing, read-only endpoint. Two objects matter when you are
+wiring the guard into a system that polls it:
+
+| Object | Fields | Notes |
+| --- | --- | --- |
+| `policy` | `enabled`, `destinationCount`, `allowAnyDestination`, `allowContractCreation`, `hasGlobalMaxNativeWei`, `erc20RecipientCheck`, `notifyConfigured` | Boolean/count projection of the guard config. **Never** exposes allowlisted addresses — `destinationCount` is a count, not a list. All `false`/`0` when the guard is disabled. |
+| `decisions` | `abort`, `fail_open`, `forward`, `policy_denied`, `chain_mismatch`, `unsigned_refused`, `totalSendDecisions` | Process-lifetime counters, not per-request. |
+
+Read it without touching any chain:
+
+```bash
+curl -s http://127.0.0.1:8545/health | jq .policy,.decisions
+```
 
 Troubleshooting: [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md). Decision log schema: [docs/DECISION_LOG.md](./docs/DECISION_LOG.md).
 

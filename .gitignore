@@ -4,9 +4,12 @@ dist/
 .env.*
 *.log
 .DS_Store
+temp_auto_push.bat
 coverage/
 
 # Eval harness reports (regenerate via npm run eval)
 evaluation/report/*.json
 evaluation/report/*.md
 !evaluation/report/.gitkeep
+.gitignore
+branch_structure.json

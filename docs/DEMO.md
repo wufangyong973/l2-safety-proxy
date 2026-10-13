@@ -48,6 +48,13 @@ Health (expect all three chains + `failOpen: true`):
 curl -s http://127.0.0.1:8545/health | jq .
 ```
 
+The response's `policy` object is a boolean/count projection of your guard config — it
+deliberately **does not** list allowlisted addresses, only `destinationCount`. The
+`decisions` object holds process-lifetime counters (`abort` / `fail_open` / `forward` /
+`policy_denied` / `chain_mismatch` / `unsigned_refused`). Full field table: the README
+`Prove it offline` section. Narrow it to the two objects with
+`curl -s http://127.0.0.1:8545/health | jq .policy,.decisions`.
+
 ### 3. Pass-through smoke (public RPCs, read-only)
 
 ```bash
